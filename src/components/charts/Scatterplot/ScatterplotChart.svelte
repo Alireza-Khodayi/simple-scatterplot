@@ -2,8 +2,9 @@
   import { scaleLinear } from 'd3-scale'
   import AxisX from './AxisX.svelte';
 	import AxisY from './AxisY.svelte';
-	import ScatterplotTooltip from './ScatterplotTooltip.svelte';
-    
+	import ScatterplotTooltip from './ScatterplotTooltip.svelte';   
+  import { fly } from "svelte/transition"
+
   export let data
 
   const margin = {
@@ -24,17 +25,23 @@
   let hoveredData;
   
 </script>
-  
+
+<h2 class="chart-title">Students who studied higher on their final exams</h2>
 <div class="chart-container" bind:clientWidth={width}>
-  <svg {width} {height}>
+  <svg {width} {height} on:mouseleave={()=> {
+    hoveredData = null
+  }}>
     <g transform={`translate(${margin.left}, ${margin.top})`}>
       <AxisX {xScale} width={innerWidth} height={innerHeight}/>
       <AxisY {yScale} width={innerWidth}/>
       {#each data as d }
-        <circle 
+        <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
+        <circle
+          in:fly={{x: -10, opacity: 0 , duration : 800}} 
           cx={xScale(d.grade)}
           cy={yScale(d.hours)}
-          r={10}
+          r={hoveredData === d ? 16 : 10}
+          opacity={hoveredData ? hoveredData === d ? 1 : 0.5 : 1}
           fill='purple'
           stroke='black'
           stroke-width='1'
@@ -44,6 +51,7 @@
           on:focus={() => {
             hoveredData = d
           }}
+          tabindex="0"
         />
       {/each}
     </g>
@@ -58,5 +66,16 @@
       font-weight: 400; 
       font-size: 12px;
       fill: #8f8f8f;
+    }
+
+    circle {
+      transition: r 300ms ease, opacity 500ms ease;
+      cursor: pointer;
+    }
+
+    .chart-title {
+      font-size: 1.45rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
     }
   </style>

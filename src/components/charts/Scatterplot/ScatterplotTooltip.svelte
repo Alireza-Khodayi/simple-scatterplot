@@ -1,19 +1,29 @@
 <script>
+    import { fly } from "svelte/transition"
+
     export let data;
     export let xScale;
     export let yScale;
     export let width;
 
     let toolTipWidth;
+
     $: x = xScale(data.grade);
     $: y = yScale(data.hours);
-    $: xPosition = toolTipWidth + x > width ? x - toolTipWidth : x
 
-     $ :console.log(toolTipWidth + x > width)
+    const xNudge = 15;
+    const yNudge = 30;
+
+    $: isFallingOffChart = toolTipWidth + x > width
+    $: xPosition = isFallingOffChart ? x - toolTipWidth - xNudge : x + xNudge
+    $: yPosition = y + yNudge;
+
 </script>
 <div
+    in:fly={{ y: -20 }}
+    out:fly={{ y: 20 }}
     bind:clientWidth={toolTipWidth}
-    class="tooltip" style="left: {xPosition}px; top: {y}px">
+    class="tooltip" style="left: {xPosition}px; top: {yPosition}px">
         <h3 class="title">{data.name}<span>{data.grade}%</span></h3>
         <p class="text">{data.hours} hours studied</p>
 </div>
